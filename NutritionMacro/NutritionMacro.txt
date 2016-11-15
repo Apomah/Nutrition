@@ -1,0 +1,51 @@
+Sub populate_Nutrition_Information()
+
+
+    'Dimensions
+    Dim foodTracker As Workbook, foodInfo As Workbook
+    Dim selectedRange As Range
+    Dim count As Integer, match As Integer
+    
+    'Sheet Stuff
+    Application.EnableEvents = False
+    Application.ScreenUpdating = False
+    
+    
+    'Getting contents of selected cells
+    Set selectedRange = Application.InputBox("Select a range", "Obtain Range Object", Type:=8)
+    
+    'Getting Food Tracker Workbook
+    Set foodTracker = ActiveWorkbook
+    
+    'Getting Food Info Workbook
+    vFile = Application.GetOpenFilename("Excel-files,*.xlsm", _
+        1, "Select One File To Open", , False)
+    If TypeName(vFile) = "Boolean" Then Exit Sub
+    Workbooks.Open vFile
+    Set foodInfo = ActiveWorkbook
+    
+    'Comparing contents vs Food Info
+    For Each cell In selectedRange
+        match = 0
+        For Index = 3 To 500
+            If StrComp(foodTracker.Worksheets(1).Cells(cell.Row, cell.Column).Value, foodInfo.Worksheets(1).Cells(Index, 2).Value) = 0 Then
+                match = 1
+                For i = 3 To 21
+                    foodTracker.Worksheets(1).Cells(cell.Row, i + 1) = foodInfo.Worksheets(1).Cells(Index, i)
+                Next i
+                foodTracker.Worksheets(3).Cells(cell.Row, 3) = foodInfo.Worksheets(1).Cells(Index, 2)
+                foodTracker.Worksheets(3).Cells(cell.Row, 4) = foodInfo.Worksheets(1).Cells(Index, 3)
+                For i = 5 To 19
+                    foodTracker.Worksheets(3).Cells(cell.Row, i) = foodInfo.Worksheets(1).Cells(Index, i + 17)
+                Next i
+            End If
+        Next Index
+        If match = 0 Then
+            MsgBox "The item at " & cell & " does not have an entry in the Food Info sheet."
+        End If
+    Next cell
+    
+    'Close Food Info Workbook
+    foodInfo.Close
+    
+End Sub
